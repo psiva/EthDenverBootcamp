@@ -1,30 +1,78 @@
-// SPDX-License-Identifier: None
+// SPDX-License-Identifier: UNLICENSED
 
-pragma solidity 0.8.17;
+pragma solidity ^0.8.0;
 
+/**
+ @title Contract to implement functionality for management of VolcanoCoin
+ @author Siva Puvvada
+*/
+contract VolcanoCoin{
 
-contract BootcampContract {
-
-    uint256 number;
+    uint totalSupply = 10000;
     address owner;
 
+    string symbol = "VOLCANO";
+    struct Payment{
+        uint amount;
+        address recepient;
+    }
+    event Minted(uint);
+    event Transfer(address indexed, uint);
+
+    mapping (address => uint) public balances;
+    mapping (address => Payment[]) userPayments;
+
+
+    /**
+     @dev Modifier to check if the sender is the owner of the contract
+    */
+    modifier onlyOwner(){
+        if(msg.sender == owner){
+            _;
+        }
+    }
+
+    /**
+     @notice Constructor to create VolcanoCoin
+    */
     constructor(){
         owner = msg.sender;
+        balances[owner] = totalSupply;
+    }
+    /**
+    @notice This function allows owner of the contract to increase the coin supply in increments
+            of 1000
+    */
+    function mint() public onlyOwner{
+        totalSupply = totalSupply +1000;
+        emit Minted(totalSupply);
+    }
+    /**
+    @notice This function returns the total supply of this coin
+    */
+    function getTotalSupply() public view returns(uint){
+        return totalSupply;
+    }
+    /**
+    @notice This function allows a user to transfer their balance to another user
+    @param to - Recepient's address
+    @param amount - Amount to transfer
+    */
+    function transfer(address payable to, uint amount) payable external returns(bool){
+        require(amount>0 && amount <= balances[msg.sender]);
+        balances[msg.sender] = balances[msg.sender] - amount;
+        balances[to] = balances[to] + amount;
+        Payment memory payment = Payment({amount:amount,recepient:to});
+        userPayments[owner].push(payment);
+        emit Transfer(to,amount);        
+        return true;
     }
 
-    function store(uint256 num) public {
-        number = num;
+    /**
+       @dev This function provides an ability for the owner to destroy and remove the contract from the blockchain
+    */
+    function kill() public onlyOwner{
+        selfdestruct(payable(owner));
     }
-
-
-    function retrieve() public view returns (uint256){
-        return number;
-    }
-
-    function returnAddr() external view returns (address){
-        if(msg.sender == owner){
-            return 0x000000000000000000000000000000000000dEaD;
-        } 
-        return msg.sender;
-    }
+    
 }
