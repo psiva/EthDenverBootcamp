@@ -9,6 +9,7 @@ pragma solidity ^0.8.0;
 contract VolcanoCoin{
 
     uint totalSupply = 10000;
+    uint supplyIncr = 1000;
     address owner;
 
     string symbol = "VOLCANO";
@@ -44,7 +45,7 @@ contract VolcanoCoin{
             of 1000
     */
     function mint() public onlyOwner{
-        totalSupply = totalSupply +1000;
+        totalSupply = totalSupply +supplyIncr;
         emit Minted(totalSupply);
     }
     /**
@@ -55,16 +56,16 @@ contract VolcanoCoin{
     }
     /**
     @notice This function allows a user to transfer their balance to another user
-    @param to - Recepient's address
-    @param amount - Amount to transfer
+    @param _to - Recepient's address
+    @param _amount - Amount to transfer
     */
-    function transfer(address payable to, uint amount) payable external returns(bool){
-        require(amount>0 && amount <= balances[msg.sender]);
-        balances[msg.sender] = balances[msg.sender] - amount;
-        balances[to] = balances[to] + amount;
-        Payment memory payment = Payment({amount:amount,recepient:to});
+    function transfer(address payable _to, uint _amount) payable external returns(bool){
+        require(_amount>0 && _amount <= balances[msg.sender]);
+        balances[msg.sender] = balances[msg.sender] - _amount;
+        balances[_to] = balances[_to] + _amount;
+        Payment memory payment = Payment({amount:_amount,recepient:_to});
         userPayments[owner].push(payment);
-        emit Transfer(to,amount);        
+        emit Transfer(_to,_amount);        
         return true;
     }
 
