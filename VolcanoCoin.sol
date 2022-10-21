@@ -56,12 +56,20 @@ contract VolcanoCoin{
     @param to - Recepient's address
     @param amount - Amount to transfer
     */
-    function transfer(address to, uint amount) payable external{
-        require(balances[msg.sender]>0);
+    function transfer(address payable to, uint amount) payable external{
+        require(amount>0 && amount <= balances[msg.sender]);
         balances[msg.sender] = balances[msg.sender] - amount;
         balances[to] = balances[to] + amount;
         Payment memory payment = Payment({amount:amount,recepient:to});
         userPayments[owner].push(payment);
         emit CoinTransfer(to,amount);        
     }
+
+    /**
+       @dev This function provides an ability for the owner to destroy and remove the contract from the blockchain
+    */
+    function kill() public onlyOwner{
+        selfdestruct(payable(owner));
+    }
+    
 }
