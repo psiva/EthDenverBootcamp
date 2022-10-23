@@ -11,7 +11,8 @@ contract VolcanoCoin {
     uint supplyIncr = 1000;
     address owner;
 
-    string symbol = "VOLCANO";
+    string constant symbol = "VC";
+
     struct Payment {
         uint amount;
         address recepient;
@@ -64,7 +65,10 @@ contract VolcanoCoin {
         external
         returns (bool)
     {
-        require(_amount > 0 && _amount <= balances[msg.sender]);
+        require(
+            _amount > 0 && _amount <= balances[msg.sender],
+            "Not enough balance"
+        );
         balances[msg.sender] = balances[msg.sender] - _amount;
         balances[_to] = balances[_to] + _amount;
         Payment memory payment = Payment({amount: _amount, recepient: _to});
