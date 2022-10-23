@@ -6,26 +6,27 @@ pragma solidity ^0.8.0;
  @title Contract to implement functionality for management of VolcanoCoin
  @author Siva Puvvada
 */
-contract VolcanoCoin{
-
+contract VolcanoCoin {
     uint totalSupply = 10000;
+    uint supplyIncr = 1000;
     address owner;
 
-    struct Payment{
+    string symbol = "VOLCANO";
+    struct Payment {
         uint amount;
         address recepient;
     }
-    event NewSupply(uint);
-    event CoinTransfer(address, uint);
+    event Minted(uint);
+    event Transfer(address indexed, uint);
 
-    mapping (address => uint) public balances;
-    mapping (address => Payment[]) userPayments;
+    mapping(address => uint) public balances;
+    mapping(address => Payment[]) userPayments;
 
     /**
      @dev Modifier to check if the sender is the owner of the contract
     */
-    modifier onlyOwner(){
-        if(msg.sender == owner){
+    modifier onlyOwner() {
+        if (msg.sender == owner) {
             _;
         }
     }
@@ -33,43 +34,49 @@ contract VolcanoCoin{
     /**
      @notice Constructor to create VolcanoCoin
     */
-    constructor(){
+    constructor() {
         owner = msg.sender;
         balances[owner] = totalSupply;
     }
+
     /**
     @notice This function allows owner of the contract to increase the coin supply in increments
             of 1000
     */
-    function addSupply() public onlyOwner{
-        totalSupply = totalSupply +1000;
-        emit NewSupply(totalSupply);
+    function mint() public onlyOwner {
+        totalSupply = totalSupply + supplyIncr;
+        emit Minted(totalSupply);
     }
+
     /**
     @notice This function returns the total supply of this coin
     */
-    function getTotalSupply() public view returns(uint){
+    function getTotalSupply() public view returns (uint) {
         return totalSupply;
     }
+
     /**
     @notice This function allows a user to transfer their balance to another user
-    @param to - Recepient's address
-    @param amount - Amount to transfer
+    @param _to - Recepient's address
+    @param _amount - Amount to transfer
     */
-    function transfer(address payable to, uint amount) payable external{
-        require(amount>0 && amount <= balances[msg.sender]);
-        balances[msg.sender] = balances[msg.sender] - amount;
-        balances[to] = balances[to] + amount;
-        Payment memory payment = Payment({amount:amount,recepient:to});
+    function transfer(address payable _to, uint _amount)
+        external
+        returns (bool)
+    {
+        require(_amount > 0 && _amount <= balances[msg.sender]);
+        balances[msg.sender] = balances[msg.sender] - _amount;
+        balances[_to] = balances[_to] + _amount;
+        Payment memory payment = Payment({amount: _amount, recepient: _to});
         userPayments[owner].push(payment);
-        emit CoinTransfer(to,amount);        
+        emit Transfer(_to, _amount);
+        return true;
     }
 
     /**
        @dev This function provides an ability for the owner to destroy and remove the contract from the blockchain
     */
-    function kill() public onlyOwner{
+    function kill() public onlyOwner {
         selfdestruct(payable(owner));
     }
-    
 }
