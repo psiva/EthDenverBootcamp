@@ -2,17 +2,17 @@
 
 pragma solidity ^0.8.0;
 
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
+
 /**
  @title Contract to implement functionality for management of VolcanoCoin
  @author Siva Puvvada
 */
-contract VolcanoCoin {
+contract VolcanoCoin is Ownable {
     uint totalSupply = 10000;
     uint supplyIncr = 1000;
-    address owner;
 
-    string constant symbol = "VC";
-
+    string symbol = "VOLCANO";
     struct Payment {
         uint amount;
         address recepient;
@@ -24,20 +24,10 @@ contract VolcanoCoin {
     mapping(address => Payment[]) userPayments;
 
     /**
-     @dev Modifier to check if the sender is the owner of the contract
-    */
-    modifier onlyOwner() {
-        if (msg.sender == owner) {
-            _;
-        }
-    }
-
-    /**
      @notice Constructor to create VolcanoCoin
     */
     constructor() {
-        owner = msg.sender;
-        balances[owner] = totalSupply;
+        balances[owner()] = totalSupply;
     }
 
     /**
@@ -65,14 +55,11 @@ contract VolcanoCoin {
         external
         returns (bool)
     {
-        require(
-            _amount > 0 && _amount <= balances[msg.sender],
-            "Not enough balance"
-        );
+        require(_amount > 0 && _amount <= balances[msg.sender]);
         balances[msg.sender] = balances[msg.sender] - _amount;
         balances[_to] = balances[_to] + _amount;
         Payment memory payment = Payment({amount: _amount, recepient: _to});
-        userPayments[owner].push(payment);
+        userPayments[owner()].push(payment);
         emit Transfer(_to, _amount);
         return true;
     }
@@ -81,6 +68,6 @@ contract VolcanoCoin {
        @dev This function provides an ability for the owner to destroy and remove the contract from the blockchain
     */
     function kill() public onlyOwner {
-        selfdestruct(payable(owner));
+        selfdestruct(payable(owner()));
     }
 }
