@@ -59,7 +59,7 @@ contract VolcanoCoin is Ownable {
         balances[msg.sender] = balances[msg.sender] - _amount;
         balances[_to] = balances[_to] + _amount;
         Payment memory payment = Payment({amount: _amount, recepient: _to});
-        userPayments[owner()].push(payment);
+        userPayments[msg.sender].push(payment);
         emit Transfer(_to, _amount);
         return true;
     }
