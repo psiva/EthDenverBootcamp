@@ -58,10 +58,39 @@ contract VolcanoCoin is Ownable {
         require(_amount > 0 && _amount <= balances[msg.sender]);
         balances[msg.sender] = balances[msg.sender] - _amount;
         balances[_to] = balances[_to] + _amount;
-        Payment memory payment = Payment({amount: _amount, recepient: _to});
-        userPayments[msg.sender].push(payment);
+        recordPayment(msg.sender, _to, _amount);
         emit Transfer(_to, _amount);
         return true;
+    }
+
+    /**
+    @notice This function fetches the payments made by a user
+    @param user - User(Sender) address
+    */
+    function fetchUserPayments(address user)
+        external
+        view
+        returns (Payment[] memory)
+    {
+        return userPayments[user];
+    }
+
+    /**
+    @notice This function records the payment made by the sender to a recepient
+    @param _sender - Sender's address
+    @param _receiver - Recepient's address
+    @param _amount - Amount to transfer
+    */
+    function recordPayment(
+        address _sender,
+        address _receiver,
+        uint _amount
+    ) private {
+        Payment memory payment = Payment({
+            amount: _amount,
+            recepient: _receiver
+        });
+        userPayments[_sender].push(payment);
     }
 
     /**
