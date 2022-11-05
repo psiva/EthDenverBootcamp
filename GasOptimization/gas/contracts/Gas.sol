@@ -2,8 +2,8 @@
 pragma solidity 0.8.17;
 
 contract GasContract {
-    uint256 public totalSupply = 0; // cannot be updated
-    uint256 private paymentCounter = 0;
+    uint256 public totalSupply; // cannot be updated
+    uint256 private paymentCounter;
 
     mapping(address => uint256) private balances;
     mapping(address => Payment[]) private payments;
@@ -33,8 +33,8 @@ contract GasContract {
 
     modifier checkIfWhiteListed(address sender) {
         require(msg.sender == sender, "originator not the sender");
-        uint256 usersTier = whitelist[msg.sender];
-
+        require(whitelist[msg.sender] > 0, "user not whitelisted");
+        require(whitelist[msg.sender] < 4, "user tier should be <4");
         _;
     }
 
@@ -47,6 +47,7 @@ contract GasContract {
         totalSupply = _totalSupply;
         administrators = _admins;
         balances[msg.sender] = totalSupply;
+        emit supplyChanged(msg.sender, totalSupply);
     }
 
     function checkForAdmin(address _user) private view returns (bool admin_) {
@@ -86,6 +87,7 @@ contract GasContract {
         uint256 _amount,
         PaymentType _type
     ) external {
+        require(_ID > 0 && _amount > 0, "ID/Amount must be >0");
         checkForAdmin(msg.sender);
         Payment[] storage userPayments = payments[_user];
         uint256 len = userPayments.length;
@@ -98,6 +100,7 @@ contract GasContract {
     }
 
     function addToWhitelist(address _userAddrs, uint256 _tier) external {
+        require(_tier > 0 && _tier < 255, "use tier value between 0 and 255");
         checkForAdmin(msg.sender);
         whitelist[_userAddrs] = _tier < 3 ? _tier : 3;
         emit AddedToWhitelist(_userAddrs, _tier);
@@ -108,6 +111,10 @@ contract GasContract {
         uint256 _amount,
         ImportantStruct memory _struct
     ) external checkIfWhiteListed(msg.sender) {
+        require(
+            balances[msg.sender] >= _amount,
+            "Sender has insufficient balance"
+        );
         balances[msg.sender] -= _amount;
         balances[_recipient] += _amount;
         balances[msg.sender] += whitelist[msg.sender];
