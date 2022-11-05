@@ -21,5 +21,6 @@ In order to generate storage diagram run the following command:
 
 After Optimization results are as follows -
 
-![image](https://user-images.githubusercontent.com/503839/200124573-84ed6902-6ca7-4421-a0d3-723bd8428807.png)
+![image](https://user-images.githubusercontent.com/503839/200125944-1daf6e02-bfd0-4178-93ba-edd439160332.png)
+
 
